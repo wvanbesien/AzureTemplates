@@ -1,0 +1,145 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.1.0",
+  "parameters": {
+    "NetscalerName": {
+      "type": "string"
+    },
+    "virtualNetworkName": {
+      "type": "string"
+    },
+    "NIC1resourcegroupName": {
+      "type": "string"
+    },
+    "Nic1subnetName": {
+      "type": "string"
+    },
+    "adminUserName": {
+      "type": "string"
+    },
+    "adminPassword": {
+      "type": "string"
+    },
+    "virtualMachineSize": {
+      "type": "string"
+    },
+    "publisher": {
+      "type": "string"
+    },
+    "offer": {
+      "type": "string"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "storageAccountType": {
+      "type": "string"
+    },
+    "INTIP": {
+      "type": "array"
+    },
+    "AvailabilitySetName": {
+      "type": "string"
+    }
+   },
+  "variables": {
+    "NSNic1Name": "[concat(parameters('NetscalerName'),'-01-NIC')]",
+    "nsnic1VnetID": "[resourceId(parameters('NIC1resourcegroupName'), 'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+    "nsnic1SubnetRef": "[concat(variables('nsnic1VnetID'), '/subnets/', parameters('Nic1subnetName'))]"
+    },
+  "resources": [
+    {
+      "name": "[variables('NSNic1Name')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-09-01",
+      "dependsOn": [
+      
+      ],
+      "tags": {
+        "displayName": "[variables('NSNic1Name')]"
+      },
+      "properties": {
+        "enableIPForwarding": true,
+        "enableAcceleratedNetworking": true,
+        "copy": [
+          {
+            "name": "ipConfigurations",
+            "count": "[length(parameters('INTIP'))]",
+            "input": {
+              "name": "[concat('intip',add(copyIndex('ipConfigurations'),1))]",
+              "properties": {
+                "privateIPAllocationMethod": "static",
+                "primary": "[equals(copyIndex('ipConfigurations'),0)]",
+                "privateIPAddress": "[parameters('INTIP')[copyIndex('ipConfigurations')]]",
+                "subnet": {
+                  "id": "[variables('nsnic1SubnetRef')]"
+                }
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', variables('Nic1SecurityGroupName'))]"
+        }
+      }
+    },
+  
+    {
+      "name": "[parameters('NetScalerName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2016-04-30-preview",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('NSNic1Name'))]"   
+      ],
+      "properties": {
+        "osProfile": {
+          "computerName": "[parameters('NetScalerName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[parameters('publisher')]",
+            "offer": "[parameters('offer')]",
+            "sku": "[parameters('sku')]",
+            "version": "[parameters('version')]"
+          },
+          "osDisk": {
+            "name": "[concat(parameters('NetScalerName'),'-DISK-OS')]",
+            "createOption": "FromImage",
+            "managedDisk": {
+              "storageAccountType": "[parameters('storageAccountType')]"
+            }
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('NSNic1Name'))]",
+              "properties": {
+                "Primary": true
+              }
+            }
+          ]
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]"
+        }
+      },
+      "plan": {
+        "name": "[parameters('sku')]",
+        "publisher": "[parameters('publisher')]",
+        "product": "[parameters('offer')]"
+      }
+    }
+  ]
+}
