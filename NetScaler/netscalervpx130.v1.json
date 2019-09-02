@@ -62,7 +62,8 @@
     },
     "sku": {
       "type": "string",
-      "allowValues": [
+      "defaultValue": "netscalerbyol",
+      "allowedValues": [
         "netscaler1000enterprise",
         "netscaler1000platinum",
         "netscaler1000standard",
