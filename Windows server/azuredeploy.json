@@ -64,10 +64,10 @@
         "2016-Datacenter-with-Containers",
         "2016-Datacenter-with-RDSH",
         "2016-Nano-Server",
-        "2019-Datacenter-gensecond",
+        "2019-Datacenter",
         "2019-Datacenter-smalldisk",
-        "2019-Datacenter-core-g2",
-        "2019-Datacenter-core-smalldisk-g2"
+        "2019-Datacenter-Core",
+        "2019-Datacenter-Core-smalldisk"
       ]
     },
     "VM_AdminUsername": {
