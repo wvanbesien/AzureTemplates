@@ -109,18 +109,21 @@
     },
     "VNET_Name": {
       "type": "string",
+      "defaultValue":"AE-SHARED-01-VNET",
       "metadata": {
         "description": "The name of the Virtual Network the NIC will be connected to (must be in the same region)."
       }
     },
     "VNET_ResourceGroupName": {
       "type": "string",
+      "defaultValue":"AE-NETWORK-RG",
       "metadata": {
         "description": "The name of the Virtual Network Resource Group the NIC will be connected to (must be in the same region)."
       }
     },
     "VNET_Subnet_Name": {
       "type": "string",
+      "defaultValue":"DOM1-DC-01-SN",
       "metadata": {
         "description": "The name of the Subnet on the Virtual Network the NIC will be attached to (must be in the same region)."
       }
